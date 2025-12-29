@@ -1,0 +1,170 @@
+import java.util.*;
+
+
+
+public class practise {
+    static List<Show> shows = new ArrayList<>();
+    static Map<String, String> bookings = new HashMap<>(); // userId -> seat
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        addShows();
+        while (true) {
+            System.out.println("==== Movie Ticket Booking ====");
+            System.out.println("1. List shows by city");
+            System.out.println("2. Book ticket");
+            System.out.println("3. Cancel ticket");
+            System.out.println("4. Exit");
+            System.out.print("Enter choice: ");
+            int choice = sc.nextInt();
+            sc.nextLine();
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter city: ");
+                    String city = sc.nextLine();
+                    listShows(city);
+                    break;
+                case 2:
+                    bookTicket(sc);
+                    break;
+                case 3:
+                    cancelTicket(sc);
+                    break;
+                case 4:
+                    System.out.println("Thank you !");
+                    return;
+                default:
+                    System.out.println("Invalid choice!");
+            }
+        }
+    }
+
+    static void addShows() {
+        shows.add(new Show(1, "Madharaasi", "24-08-2025 12:13 pm", "PVR Cinemas - Audi1", "Tamil", "U/A", 180));
+        shows.add(new Show(2, "Coolie", "24-08-2025 03:30 pm", "INOX - Gold", "Tamil", "A", 200));
+        shows.add(new Show(3, "Jananayagan", "24-08-2025 06:00 pm", "Kasi Cinemas - Audi3", "Tamil", "U/A", 150));
+        shows.add(new Show(4, "Thug Life", "24-08-2025 09:15 am", "DMAX", "Tamil", "A", 220));
+        shows.add(new Show(5, "Avatar 2 :The Way of Water (3-D)", "24-08-2025 11:45 am", "IMAX - Dolby Atmos", "English", "U/A", 350));
+        shows.add(new Show(6, "Deadpool and Wolverine", "24-08-2025 05:20 pm", "Sathyam Cinemas - Audi5", "English", "A", 300));
+        shows.add(new Show(7, "Avengers : Doomsday (3-D)", "24-08-2025 08:30 pm", "Escape Cinemas - Audi2", "English", "U/A", 320));
+    }
+
+    static void listShows(String city) {
+        System.out.println("Available shows in " + city + ":");
+        for (Show show : shows) {
+            System.out.println("ShowID: " + show.showId + " | " + show.title + " | " + show.time + " | " +
+                               show.theater + " | Language: " + show.language + " | Cert: " + show.certificate + " | Price: ₹" + show.price);
+        }
+    }
+
+    static void bookTicket(Scanner sc) {
+        System.out.print("Enter ShowID: ");
+        int showId = sc.nextInt();
+        sc.nextLine();
+
+        Show selectedShow = null;
+        for (Show show : shows) {
+            if (show.showId == showId) {
+                selectedShow = show;
+                break;
+            }
+        }
+        if (selectedShow == null) {
+            System.out.println("Invalid ShowID!");
+            return;
+        }
+
+        System.out.println("Available seats:");
+        displaySeats(selectedShow);
+
+        System.out.print("Enter seat (e.g., A1): ");
+        String seat = sc.nextLine().toUpperCase();
+
+        if (!isValidSeat(seat)) {
+            System.out.println("Please enter a correct seat ID like A1, B2, etc.");
+            return;
+        }
+
+        if (!selectedShow.availableSeats.contains(seat)) {
+            System.out.println("Seat not available!");
+            return;
+        }
+
+        System.out.print("Enter UserID: ");
+        String userId = sc.nextLine();
+
+        selectedShow.availableSeats.remove(seat);
+        bookings.put(userId, seat);
+
+        // Updated booking success message
+        System.out.println("Booking successful for movie: " + selectedShow.title 
+        	    + " | Seat: " + seat 
+        	    + " | Language: " + selectedShow.language 
+        	    + " | Cert: " + selectedShow.certificate 
+        	    + " | Price: " + selectedShow.price);
+    }
+
+    static void cancelTicket(Scanner sc) {
+        System.out.print("Enter UserID: ");
+        String userId = sc.nextLine();
+
+        if (!bookings.containsKey(userId)) {
+            System.out.println("No booking found for this UserID!");
+            return;
+        }
+
+        String seat = bookings.remove(userId);
+        for (Show show : shows) {
+            if (!show.availableSeats.contains(seat)) {
+                show.availableSeats.add(seat);
+                break;
+            }
+        }
+
+        System.out.println("Ticket cancelled successfully!");
+    }
+
+    static void displaySeats(Show show) {
+        int count = 0;
+        for (String seat : show.availableSeats) {
+            System.out.print("[" + seat + "] ");
+            count++;
+            if (count % 5 == 0) System.out.println();
+        }
+        System.out.println();
+    }
+
+    static boolean isValidSeat(String seat) {
+        return seat.matches("^[A-E][1-5]$");
+    }
+}
+class Show {
+    int showId;
+    String title;
+    String time;
+    String theater;
+    String language;
+    String certificate;
+    int price;
+    List<String> availableSeats;
+
+    Show(int showId, String title, String time, String theater, String language, String certificate, int price) {
+        this.showId = showId;
+        this.title = title;
+        this.time = time;
+        this.theater = theater;
+        this.language = language;
+        this.certificate = certificate;
+        this.price = price;
+        this.availableSeats = new ArrayList<>();
+
+        // Generate seats (A1-E5)
+        char[] rows = {'A', 'B', 'C', 'D', 'E'};
+        for (char row : rows) {
+            for (int i = 1; i <= 5; i++) {
+                availableSeats.add(row + String.valueOf(i));
+            }
+        }
+    }
+}
